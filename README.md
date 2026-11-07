@@ -4,6 +4,11 @@
 
 An animated gradient, your own image, or a looping video behind the whole [Tern](https://stencil.so/tern) window: under the terminal, the sidebar, the tab bar and the status line. Bar tints keep tabs readable, and one settings page covers the background and how Tern's panels sit over it.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.webp">
+  <img alt="A Tern window with a cherry-blossom video playing behind the tab sidebar, the file tree, an omp agent pane, a terminal and a music player, with the tab bar and status line tinted so their text stays readable" src="docs/images/hero-light.webp">
+</picture>
+
 - [Install](#install)
 - [Use](#use)
 - [Settings](#settings)
@@ -46,6 +51,11 @@ Press `ctrl+alt+b`, or run **Backdrop settings** from the palette. To update, ru
 Importing a video takes a few seconds; a toast says how many frames it kept and whether the loop was smoothed.
 
 ## Settings
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/settings-dark.webp">
+  <img alt="Backdrop's settings page: Source set to Media, the imported video with its frame count and a Change button, the Recent menu, and the Dim stepper" src="docs/images/settings-light.webp">
+</picture>
 
 **Background page**
 
