@@ -170,6 +170,13 @@ local function bar_css(c): string
 		-- stretch it) and shrinks it while a menu (Recent) is open, so its backing
 		-- stopped short. Paint the same backing on the full-height region behind it.
 		".sf-main[data-surface='plugin.backdrop.settings'] { background: light-dark(#f7f7f9, #0f0f14) !important; position: relative; }",
+		-- In a narrow pane Tern let labels shrink to one letter per line beside a wide
+		-- control. Keep a readable label width and wrap the control under it instead.
+		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row { flex-wrap: wrap !important; }",
+		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-lbl { min-width: 9em !important; }",
+		-- The control box also holds Tern's hover-only Reset button; when both don't fit,
+		-- wrap-reverse keeps the control on top and puts Reset under it.
+		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-ctl { max-width: 100% !important; flex-wrap: wrap-reverse !important; justify-content: flex-end !important; }",
 		-- A layer behind the page covering the whole pane: clicks below the shrunken page land
 		-- on it and close the menu (host.luau's "dismiss"), as clicks elsewhere on the page do.
 		".sf-main[data-surface='plugin.backdrop.settings'] > .sf-prefs { position: relative; z-index: 1; }",
