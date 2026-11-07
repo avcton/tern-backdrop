@@ -22,7 +22,10 @@ function M.normalize(raw: string): string
 		p = string.gsub(p, "%%(%x%x)", function(h)
 			return string.char(tonumber(h, 16) :: number)
 		end)
-	elseif string.find(p, "\\", 1, true) and not string.match(p, "^%a:\\") then
+		-- file:///C:/Users/... names a Windows drive path.
+		p = string.gsub(p, "^/(%a:[/\\])", "%1")
+	elseif tern.runtime.os ~= "windows" and string.find(p, "\\", 1, true) then
+		-- Shell escapes ("My\ Pictures") from a Unix terminal; on Windows "\" is the separator.
 		p = string.gsub(p, "\\(.)", "%1")
 	end
 	if p == "~" or string.match(p, "^~[/\\]") then
@@ -40,8 +43,12 @@ function M.check(path: string): (string?, string?)
 	if string.match(path, "^%a[%w+.-]*://") then
 		return nil, "Web links aren't supported. Download the file first, then paste its path."
 	end
-	if string.sub(path, 1, 1) ~= "/" and not string.match(path, "^%a:[\\/]") then
-		return nil, "Use a full path, starting with / or ~."
+	local absolute = string.sub(path, 1, 1) == "/" or string.match(path, "^%a:[\\/]") ~= nil
+		or string.sub(path, 1, 2) == "\\\\"
+	if not absolute then
+		return nil, if tern.runtime.os == "windows"
+			then "Use a full path, like C:\\Users\\you\\Pictures\\wallpaper.jpg or ~\\Pictures\\..."
+			else "Use a full path, starting with / or ~."
 	end
 	if not tern.fs.exists(path) then
 		return nil, "Nothing at that path."
@@ -58,8 +65,12 @@ function M.check(path: string): (string?, string?)
 	return nil, "Not an image or video (png, jpg, webp, svg, bmp, gif, mp4, mov, webm)."
 end
 
--- HOME on macOS/Linux, USERPROFILE on Windows.
+-- HOME on macOS/Linux, USERPROFILE on Windows (where HOME, if set at all, may be a Git Bash
+-- style /c/Users/... path).
 function M.home(): string
+	if tern.runtime.os == "windows" then
+		return tern.getenv("USERPROFILE") or tern.getenv("HOME") or ""
+	end
 	return tern.getenv("HOME") or tern.getenv("USERPROFILE") or ""
 end
 
@@ -67,7 +78,12 @@ end
 function M.folder(path: string): string
 	local dir = string.match(path, "^(.*)[/\\][^/\\]*$") or path
 	local home = M.home()
-	if home ~= "" and string.sub(dir, 1, #home) == home then
+	local head = string.sub(dir, 1, #home)
+	-- Windows paths are case-insensitive: c:\users\you is the same folder.
+	if tern.runtime.os == "windows" then
+		head, home = string.lower(head), string.lower(home)
+	end
+	if home ~= "" and head == home then
 		return "~" .. string.sub(dir, #home + 1)
 	end
 	return dir

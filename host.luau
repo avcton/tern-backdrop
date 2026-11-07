@@ -15,12 +15,65 @@ local FRAME_ASPECT = 1.55
 local MAX_SECONDS = 30
 local MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024
 
+local WINDOWS = tern.runtime.os == "windows"
+
+-- Finds a tool on PATH, then in the usual install places: a daemon started by launchd or
+-- systemd often has a shorter PATH than the user's shell.
+local function find_tool(name: string): string?
+	local file = if WINDOWS then name .. ".exe" else name
+	local dirs = {}
+	local path = tern.getenv("PATH") or tern.getenv("Path") or ""
+	for dir in string.gmatch(path, if WINDOWS then "[^;]+" else "[^:]+") do
+		table.insert(dirs, (string.gsub(dir, '^"(.*)"$', "%1")))
+	end
+	local home = media.home()
+	if WINDOWS then
+		local local_app = tern.getenv("LOCALAPPDATA") or (home .. "\\AppData\\Local")
+		for _, d in {
+			local_app .. "\\Microsoft\\WinGet\\Links", -- winget
+			home .. "\\scoop\\shims", -- Scoop
+			(tern.getenv("ProgramData") or "C:\\ProgramData") .. "\\chocolatey\\bin", -- Chocolatey
+			(tern.getenv("ProgramFiles") or "C:\\Program Files") .. "\\ffmpeg\\bin",
+			"C:\\ffmpeg\\bin",
+		} do
+			table.insert(dirs, d)
+		end
+	else
+		for _, d in {
+			"/opt/homebrew/bin", "/usr/local/bin", "/opt/local/bin", "/usr/bin", "/bin", "/snap/bin",
+			"/home/linuxbrew/.linuxbrew/bin", home .. "/.linuxbrew/bin", home .. "/.local/bin",
+			home .. "/.nix-profile/bin", "/run/current-system/sw/bin", "/nix/var/nix/profiles/default/bin",
+		} do
+			table.insert(dirs, d)
+		end
+	end
+	local sep = if WINDOWS then "\\" else "/"
+	for _, dir in dirs do
+		if dir ~= "" then
+			local p = (string.gsub(dir, "[/\\]+$", "")) .. sep .. file
+			if tern.fs.exists(p) then
+				return p
+			end
+		end
+	end
+	return nil
+end
+
 local function install_hint(): string
 	local os = tern.runtime.os
 	if os == "macos" then
 		return "Install it with: brew install ffmpeg"
 	elseif os == "windows" then
 		return "Install it with: winget install ffmpeg"
+	end
+	for _, pm in {
+		{ "apt", "sudo apt install ffmpeg" }, { "dnf", "sudo dnf install ffmpeg" },
+		{ "pacman", "sudo pacman -S ffmpeg" }, { "zypper", "sudo zypper install ffmpeg" },
+		{ "apk", "sudo apk add ffmpeg" }, { "brew", "brew install ffmpeg" },
+	} do
+		if find_tool(pm[1]) then
+			return "Install it with: " .. pm[2]
+		end
 	end
 	return "Install ffmpeg with your package manager."
 end
@@ -89,18 +142,8 @@ local function clear_assets(keep: string?)
 	end
 end
 
--- Finds a tool by name or in the usual install places: a daemon started by launchd has a short PATH.
-local function find_tool(name: string): string?
-	for _, dir in { "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/home/linuxbrew/.linuxbrew/bin" } do
-		if tern.fs.exists(dir .. "/" .. name) then
-			return dir .. "/" .. name
-		end
-	end
-	return nil
-end
-
--- Frames are packed into a few sprite sheets (ffmpeg's tile filter) and played with steps()
--- over background-position. Tern 0.9.10 keeps only the images currently in use, so one file
+-- Frames are packed into a few sprite sheets (ffmpeg's tile filter) and played by stepping
+-- background-position. Tern 0.9.10 keeps only the images currently in use, so one file
 -- per frame meant a load and decode on every frame, which flickered under load. A handful of
 -- sheets stay loaded the whole time. Each sheet is at most SHEET_MAX a side; frames shrink
 -- below FRAME_W when that's what it takes to stay within MAX_SHEETS.
@@ -155,7 +198,10 @@ end
 -- Video or GIF -> sprite sheets in MEDIA/anim-<rev>/, played by window.luau as a
 -- CSS background-image animation (the only kind of animation Tern keeps drawing when idle).
 local function import_animation(path: string, done: (boolean, string) -> ())
-	local ffprobe, ffmpeg = find_tool("ffprobe"), find_tool("ffmpeg")
+	local ffmpeg = find_tool("ffmpeg")
+	-- The ffprobe shipped beside this ffmpeg, so the two always match.
+	local sibling = ffmpeg and (string.gsub(ffmpeg, "ffmpeg(%.?[EXexe]*)$", "ffprobe%1"))
+	local ffprobe = if sibling and tern.fs.exists(sibling) then sibling else find_tool("ffprobe")
 	if not ffprobe or not ffmpeg then
 		done(false, "Videos and GIFs need ffmpeg, which isn't installed. " .. install_hint())
 		return
@@ -400,8 +446,10 @@ local function view(s)
 			hint = media.folder(c.source) .. " · " .. (if c.anim then "Video" else "Image")
 		elseif tern.runtime.os == "macos" then
 			hint = "Paste a file's path. In Finder, ⌥⌘C copies it."
+		elseif tern.runtime.os == "windows" then
+			hint = "Paste a file's path. In Explorer, Ctrl+Shift+C copies it."
 		else
-			hint = "Paste a file's path."
+			hint = "Paste a file's path. Most file managers copy it with Ctrl+C."
 		end
 		add({ id = "file", label = if c.source then media.name(c.source) else "No file chosen", hint = hint,
 			-- When the saved copy is gone the hint already says so; don't repeat it as a warning.
