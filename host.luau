@@ -188,9 +188,9 @@ local function plan_frames(duration: number, native_fps: number, src_w: number, 
 end
 
 local function parse_rate(r: string): number
-	local n, d = string.match(r, "^(%d+)/(%d+)$")
-	if n and tonumber(d) ~= 0 then
-		return tonumber(n) / tonumber(d)
+	local n, d = tonumber(string.match(r, "^(%d+)/") or ""), tonumber(string.match(r, "/(%d+)$") or "")
+	if n and d and d ~= 0 then
+		return n / d
 	end
 	return tonumber(r) or 24
 end
@@ -658,7 +658,7 @@ end
 
 tern.block.define("settings", {
 	init = function(cx, _args, saved)
-		local s = { page = (saved and saved.page) or "background", cx = cx }
+		local s: { [string]: any } = { page = (saved and saved.page) or "background", cx = cx }
 		local last = signature()
 		local function poll()
 			if s.closed then
