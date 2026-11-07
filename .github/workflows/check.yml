@@ -1,0 +1,21 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install luau-lsp
+        run: |
+          curl -sSL -o luau-lsp.zip https://github.com/JohnnyMorganz/luau-lsp/releases/latest/download/luau-lsp-linux-x86_64.zip
+          unzip -q luau-lsp.zip -d "$RUNNER_TEMP/luau-lsp"
+          echo "$RUNNER_TEMP/luau-lsp" >> "$GITHUB_PATH"
+      # tern.d.luau is committed because CI has no Tern to generate it.
+      # Refresh it with `tern plugin types .` after a Tern update.
+      - name: Type-check
+        run: luau-lsp analyze --definitions=tern.d.luau host.luau window.luau media.luau
