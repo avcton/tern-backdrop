@@ -476,7 +476,7 @@ local function view(s)
 					{ value = "tile", label = "Tile" },
 				} } })
 		end
-		add_look({ id = "dim", label = "Dim", hint = "Darkens the image so text stays readable.",
+		add_look({ id = "dim", label = "Dim", hint = "Fades the image so text stays readable.",
 			changed = c.dim ~= DEFAULTS.dim, defaultLabel = tostring(DEFAULTS.dim) .. "%",
 			control = { k = "number", value = c.dim, min = 0, max = 90, step = 5, unit = "%" } })
 	elseif c.mode == "gradient" then

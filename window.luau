@@ -81,7 +81,7 @@ local function anim_css(c): string
 		[[
 main#panel { background: transparent !important; }
 body {
-  box-shadow: inset 0 0 0 4000px rgb(0 0 0 / %.2f) !important;
+  box-shadow: inset 0 0 0 4000px rgb(from var(--bd-scrim) r g b / %.2f) !important;
   background-color: transparent !important;
   background-image: %s !important;
   background-size: %s !important;
@@ -127,7 +127,7 @@ local function css_for(c): string
 			[[
 body {
   background-color: transparent !important;
-  background-image: linear-gradient(rgb(0 0 0 / %.2f), rgb(0 0 0 / %.2f)), %s !important;
+  background-image: linear-gradient(rgb(from var(--bd-scrim) r g b / %.2f), rgb(from var(--bd-scrim) r g b / %.2f)), %s !important;
   background-size: 100%% 100%%, %s !important;
   background-repeat: no-repeat, %s !important;
   background-position: center, center !important;
@@ -163,10 +163,13 @@ end
 -- strip meets the rounded panels and the gaps between them), with rounded inner corners.
 local function bar_css(c): string
 	local css = {
+		-- Tints and the dim follow the theme: a light wash in light themes, a dark one in
+		-- dark themes, so Tern's text keeps its contrast either way.
+		"html { --bd-scrim: light-dark(#f4f4f6, #121216); }",
 		-- Our settings page: Tern sizes the prefs element itself (inline, so CSS can't
-		-- stretch it) and shrinks it while a menu (Recent) is open, so its dark backing
+		-- stretch it) and shrinks it while a menu (Recent) is open, so its backing
 		-- stopped short. Paint the same backing on the full-height region behind it.
-		".sf-main[data-surface='plugin.backdrop.settings'] { background: rgb(15 15 20) !important; position: relative; }",
+		".sf-main[data-surface='plugin.backdrop.settings'] { background: light-dark(#f7f7f9, #0f0f14) !important; position: relative; }",
 		-- A layer behind the page covering the whole pane: clicks below the shrunken page land
 		-- on it and close the menu (host.luau's "dismiss"), as clicks elsewhere on the page do.
 		".sf-main[data-surface='plugin.backdrop.settings'] > .sf-prefs { position: relative; z-index: 1; }",
@@ -193,19 +196,19 @@ local function bar_css(c): string
 	if c.mode ~= "off" then
 		local a = math.clamp(c.bar, 0, 100) / 100
 		table.insert(css, string.format(
-			"nav#tabbar { background-color: transparent !important; background-image: linear-gradient(rgb(18 18 22 / %.2f) 60%%, rgb(18 18 22 / 0)) !important; border-radius: 0 0 12px 12px !important; }",
+			"nav#tabbar { background-color: transparent !important; background-image: linear-gradient(rgb(from var(--bd-scrim) r g b / %.2f) 60%%, rgb(from var(--bd-scrim) r g b / 0)) !important; border-radius: 0 0 12px 12px !important; }",
 			a))
 		-- Side tabs (⌘⇧S): the tabs move into aside#sidebar, a full-height left column. Tint
 		-- the column instead, fading toward the panes; the nav inside it then stays clear.
 		table.insert(css, string.format(
-			"aside#sidebar { background-color: transparent !important; background-image: linear-gradient(90deg, rgb(18 18 22 / %.2f) 75%%, rgb(18 18 22 / 0)) !important; border-radius: 0 12px 12px 0 !important; }\naside#sidebar nav#tabbar { background-image: none !important; }",
+			"aside#sidebar { background-color: transparent !important; background-image: linear-gradient(90deg, rgb(from var(--bd-scrim) r g b / %.2f) 75%%, rgb(from var(--bd-scrim) r g b / 0)) !important; border-radius: 0 12px 12px 0 !important; }\naside#sidebar nav#tabbar { background-image: none !important; }",
 			a))
 		-- Rail: the tab bar itself is the full-height left column; tint it sideways like side tabs.
 		table.insert(css, string.format(
-			"html.lay-rail nav#tabbar { background-image: linear-gradient(90deg, rgb(18 18 22 / %.2f) 75%%, rgb(18 18 22 / 0)) !important; border-radius: 0 12px 12px 0 !important; }",
+			"html.lay-rail nav#tabbar { background-image: linear-gradient(90deg, rgb(from var(--bd-scrim) r g b / %.2f) 75%%, rgb(from var(--bd-scrim) r g b / 0)) !important; border-radius: 0 12px 12px 0 !important; }",
 			a))
 		table.insert(css, string.format(
-			"footer#statusline { background-color: transparent !important; background-image: linear-gradient(rgb(18 18 22 / 0), rgb(18 18 22 / %.2f) 40%%) !important; border-radius: 12px 12px 0 0 !important; }",
+			"footer#statusline { background-color: transparent !important; background-image: linear-gradient(rgb(from var(--bd-scrim) r g b / 0), rgb(from var(--bd-scrim) r g b / %.2f) 40%%) !important; border-radius: 12px 12px 0 0 !important; }",
 			math.clamp(c.status, 0, 100) / 100))
 	end
 	return table.concat(css, "\n")
