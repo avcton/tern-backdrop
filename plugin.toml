@@ -1,0 +1,18 @@
+schema = 1
+id = "backdrop"
+name = "Backdrop"
+version = "0.4.0"
+description = "Animated gradient, image or video behind the Tern window, with bar tints and window look controls."
+icon = "image"
+host = "host.luau"
+window = "window.luau"
+
+[[blocks]]
+id = "settings"
+title = "Backdrop"
+
+[[blocks]]
+id = "apply"
+title = "Set as Tern background"
+files = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif", "*.svg", "*.bmp", "*.mp4", "*.mov", "*.m4v", "*.webm", "*.mkv"]
+palette = false
