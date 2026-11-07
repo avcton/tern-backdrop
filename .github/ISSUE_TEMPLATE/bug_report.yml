@@ -1,0 +1,46 @@
+name: Bug report
+description: Something in Backdrop doesn't work or looks wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you saw instead. A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: tern
+    attributes:
+      label: Tern version
+      description: Output of `tern --version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [macOS, Linux, Windows]
+    validations:
+      required: true
+  - type: input
+    id: backdrop
+    attributes:
+      label: Backdrop version
+      description: From `tern plugin list`.
+  - type: input
+    id: ffmpeg
+    attributes:
+      label: ffmpeg version
+      description: First line of `ffmpeg -version`, if the problem involves videos or large images.
+  - type: input
+    id: layout
+    attributes:
+      label: Layout and material
+      description: For example Studio, Glass, Islands, side tabs on.
+  - type: textarea
+    id: log
+    attributes:
+      label: Log lines
+      description: Lines mentioning `backdrop` from Tern's logs (on macOS, `~/Library/Logs/Tern/tern.log` and `tern-daemon.log`).
+      render: text
