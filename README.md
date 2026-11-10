@@ -19,7 +19,7 @@ An animated gradient, your own image, or a looping video behind the whole [Tern]
 
 ## Install
 
-Built and tested on Tern 0.9.12 on macOS. Written for Linux and Windows too, which are not yet tested on real machines; reports are welcome.
+Built and tested on Tern 0.9.14 on macOS and Windows. Linux is supported but not yet tested on a real machine; reports are welcome.
 
 > [!IMPORTANT]
 > The gradient and small images work as they are. Videos, GIFs and images larger than 4096 px need [ffmpeg](https://ffmpeg.org):
