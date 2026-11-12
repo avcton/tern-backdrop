@@ -2,6 +2,17 @@
 
 All notable changes to Backdrop are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] - 2026-11-12
+
+### Changed
+
+- Needs Tern 0.9.17 or later. "Status bar tint" is now "Widget bar tint", after the bar Tern renamed.
+
+### Fixed
+
+- The widget bar tint shows again; it styled Tern's old status line, gone since 0.9.17.
+- A plugin reload during an import no longer has the retry write over files from the previous ffmpeg run, which Tern 0.9.16 keeps running.
+
 ## [1.0.0] - 2026-11-07
 
 First public release.
