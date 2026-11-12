@@ -79,7 +79,7 @@ Tints and the dim follow Tern's appearance: a light wash in light mode, a dark o
 | Panel opacity | How solid Tern's panels are; hidden for Solid | Tern's |
 | Desktop blur | Blurs the desktop behind the window; Clear only | Tern's |
 | Top bar tint | Darkens the tab bar so tabs stay readable | 60% |
-| Status bar tint | The same for the status bar | 60% |
+| Widget bar tint | The same for the widget bar along the window's foot | 60% |
 
 ## Good to know
 
@@ -91,7 +91,7 @@ Tints and the dim follow Tern's appearance: a light wash in light mode, a dark o
 | Memory | A video uses up to three decoded 4096 px sheets on the GPU, about 64 MB each. |
 | Reduce motion | With the system's reduce motion setting on, a video holds its first frame. |
 | Layouts | Studio, Rail, Float and Tiles, side tabs, and Islands or Compact density are all covered. |
-| Tern updates | Backdrop styles Tern's own window parts (`body`, `nav#tabbar`, `aside#sidebar`, `footer#statusline`). A Tern update that renames them can break the tints until Backdrop is updated. |
+| Tern updates | Backdrop styles Tern's own window parts (`body`, `nav#tabbar`, `aside#sidebar`, `footer#widgetbar`). A Tern update that renames them can break the tints until Backdrop is updated. |
 
 How it works under the hood, and why, is in [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md).
 

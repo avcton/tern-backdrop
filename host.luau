@@ -512,7 +512,7 @@ local function view(s)
 		{ id = "bar", label = "Top bar tint", hint = "Darkens the tab bar so tabs stay readable.",
 			disabled = no_bg, changed = c.bar ~= DEFAULTS.bar, defaultLabel = tostring(DEFAULTS.bar) .. "%",
 			control = { k = "number", value = c.bar, min = 0, max = 100, step = 5, unit = "%" } },
-		{ id = "status", label = "Status bar tint", hint = "Same for the bottom status bar, when it's shown.",
+		{ id = "status", label = "Widget bar tint", hint = "Same for the widget bar along the window's foot, when it's shown.",
 			disabled = no_bg, changed = c.status ~= DEFAULTS.status, defaultLabel = tostring(DEFAULTS.status) .. "%",
 			control = { k = "number", value = c.status, min = 0, max = 100, step = 5, unit = "%" } },
 	}

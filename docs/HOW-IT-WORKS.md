@@ -30,7 +30,7 @@ Old media is deleted only after a window reports that it switched to the new bac
 
 ## Limits
 
-- **Tern's selectors.** Backdrop styles `body`, `main#panel`, `nav#tabbar`, `aside#sidebar`, `footer#statusline` and the settings page's `.pf-*` classes. A Tern update that renames them needs a Backdrop update.
+- **Tern's selectors.** Backdrop styles `body`, `main#panel`, `nav#tabbar`, `aside#sidebar`, `footer#widgetbar` and the settings page's `.pf-*` classes. A Tern update that renames them needs a Backdrop update.
 - **GPU memory.** Each decoded 4096 px sheet is about 64 MB.
 - **Frame timing.** Videos play at an even rate of up to 15 fps; a GIF's per-frame delays aren't kept.
 - **Style sheet size.** Inlined sheets make the style sheet a few megabytes; it's parsed once per import.

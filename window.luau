@@ -158,7 +158,7 @@ body {
 	return "/* backdrop: off */"
 end
 
--- The tab bar and status bar have no background of their own, so a busy wallpaper shows
+-- The tab bar and widget bar have no background of their own, so a busy wallpaper shows
 -- straight through. Each gets a tint that fades toward the panels (no hard edge where the
 -- strip meets the rounded panels and the gaps between them), with rounded inner corners.
 local function bar_css(c): string
@@ -215,7 +215,7 @@ local function bar_css(c): string
 			"html.lay-rail nav#tabbar { background-image: linear-gradient(90deg, rgb(from var(--bd-scrim) r g b / %.2f) 75%%, rgb(from var(--bd-scrim) r g b / 0)) !important; border-radius: 0 12px 12px 0 !important; }",
 			a))
 		table.insert(css, string.format(
-			"footer#statusline { background-color: transparent !important; background-image: linear-gradient(rgb(from var(--bd-scrim) r g b / 0), rgb(from var(--bd-scrim) r g b / %.2f) 40%%) !important; border-radius: 12px 12px 0 0 !important; }",
+			"footer#widgetbar { background-color: transparent !important; background-image: linear-gradient(rgb(from var(--bd-scrim) r g b / 0), rgb(from var(--bd-scrim) r g b / %.2f) 40%%) !important; border-radius: 12px 12px 0 0 !important; }",
 			math.clamp(c.status, 0, 100) / 100))
 	end
 	return table.concat(css, "\n")
