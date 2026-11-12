@@ -142,6 +142,13 @@ local function clear_assets(keep: string?)
 	end
 end
 
+-- Unique per attempt: since Tern 0.9.16 a reload leaves a running ffmpeg alive, and the
+-- import's retry must not write over the orphan's files.
+local function media_path(c, kind: string, ext: string?): string
+	local p = string.format("%s/%s-%d-%d", MEDIA, kind, (c.rev or 0) + 1, math.floor(tern.now()))
+	return if ext then p .. "." .. ext else p
+end
+
 -- Frames are packed into a few sprite sheets (ffmpeg's tile filter) and played by stepping
 -- background-position. Tern 0.9.10 keeps only the images currently in use, so one file
 -- per frame meant a load and decode on every frame, which flickered under load. A handful of
@@ -195,7 +202,7 @@ local function parse_rate(r: string): number
 	return tonumber(r) or 24
 end
 
--- Video or GIF -> sprite sheets in MEDIA/anim-<rev>/, played by window.luau as a
+-- Video or GIF -> sprite sheets in MEDIA/anim-<rev>-<ms>/, played by window.luau as a
 -- CSS background-image animation (the only kind of animation Tern keeps drawing when idle).
 local function import_animation(path: string, done: (boolean, string) -> ())
 	local ffmpeg = find_tool("ffmpeg")
@@ -253,7 +260,7 @@ local function import_animation(path: string, done: (boolean, string) -> ())
 				local length = duration - fade
 				local p = plan_frames(length, rate, st.width, st.height)
 				local c = config()
-				local dir = string.format("%s/anim-%d", MEDIA, (c.rev or 0) + 1)
+				local dir = media_path(c, "anim")
 				local finish = string.format("fps=%d,crop='min(iw,ih*%.4f)':'min(ih,iw/%.4f)',scale=%d:%d:flags=lanczos,pad=iw+%d:ih+%d:%d:%d,fillborders=left=%d:right=%d:top=%d:bottom=%d:mode=smear,trim=end_frame=%d,tile=%dx%d",
 					p.fps, FRAME_ASPECT, FRAME_ASPECT, p.w, p.h, 2 * BLEED, 2 * BLEED, BLEED, BLEED,
 					BLEED, BLEED, BLEED, BLEED, p.frames, p.cols, p.rows)
@@ -352,7 +359,7 @@ local function import_image(raw: string, finished: (boolean, string) -> ())
 	local ffmpeg = if ext ~= "svg" then find_tool("ffmpeg") else nil
 	if ffmpeg then
 		-- ffmpeg writes the final file itself: no read-back through Lua memory, no temp copy.
-		local rel = string.format("%s/bg-%d.%s", MEDIA, (c.rev or 0) + 1, if ext == "png" then "png" else "jpg")
+		local rel = media_path(c, "bg", if ext == "png" then "png" else "jpg")
 		tern.fs.mkdir(MEDIA)
 		local fit = string.format("scale=w='min(iw,%d)':h='min(ih,%d)':force_original_aspect_ratio=decrease", SHEET_MAX, SHEET_MAX)
 		tern.process.run({ ffmpeg, "-y", "-v", "error", "-i", path, "-vf", fit, "-frames:v", "1", "-q:v", "2", rel },
@@ -373,7 +380,7 @@ local function import_image(raw: string, finished: (boolean, string) -> ())
 		return
 	end
 	clear_assets(nil)
-	local rel = string.format("%s/bg-%d.%s", MEDIA, (c.rev or 0) + 1, ext)
+	local rel = media_path(c, "bg", ext)
 	tern.fs.write(rel, bytes)
 	finish(rel, if ext == "svg" then "Backdrop set"
 		else "Backdrop set. Without ffmpeg, images over 4096 px won't show. " .. install_hint())
@@ -613,6 +620,11 @@ local function poll_imports()
 	tern.timer(500, poll_imports)
 end
 tern.timer(500, poll_imports)
+
+-- An orphaned ffmpeg (see media_path) has finished writing files nothing uses: prune again.
+tern.on("process_exit", function()
+	tern.kv.set("pruned", false)
+end)
 
 -- On load: tidy Recent, and if the saved copy is gone (fresh install or update), import the
 -- original again so the backdrop comes back by itself. If the original is gone too, the file
