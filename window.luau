@@ -388,7 +388,7 @@ start()
 
 tern.command({
 	id = "settings",
-	title = "Backdrop settings",
+	title = "Backdrop: Settings",
 	icon = "image",
 	keys = { "ctrl+alt+b" },
 	run = function(cx)

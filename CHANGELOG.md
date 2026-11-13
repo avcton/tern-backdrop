@@ -8,6 +8,10 @@ All notable changes to Backdrop are listed here. The format follows [Keep a Chan
 
 - **Backdrop: Switch Background** in the palette: a small floating grid of your Recent files with thumbnails (made with ffmpeg). Arrow keys and Enter (or a click) switch the background; Esc or clicking elsewhere closes it.
 
+### Changed
+
+- The settings command is now **Backdrop: Settings**, next to **Backdrop: Switch Background** in the palette.
+
 ## [1.0.1] - 2026-11-12
 
 ### Changed

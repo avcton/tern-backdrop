@@ -38,7 +38,7 @@ Built and tested on Tern 0.9.18 on macOS and Windows. Linux is supported but not
 tern plugin install github.com/avcton/tern-backdrop
 ```
 
-Press `ctrl+alt+b`, or run **Backdrop settings** from the palette. To update, run the install command again with `--force`; [CHANGELOG.md](CHANGELOG.md) lists what changed.
+Press `ctrl+alt+b`, or run **Backdrop: Settings** from the palette. To update, run the install command again with `--force`; [CHANGELOG.md](CHANGELOG.md) lists what changed.
 
 ## Use
 
