@@ -292,6 +292,100 @@ local function import_animation(path: string, done: (boolean, string) -> ())
 		end))
 end
 
+-- Picker thumbnails: one small JPEG per Recent file, outside MEDIA, which clear_assets
+-- empties on every import. Cropped to one ratio so a card's picture keeps its shape at
+-- any pane width; the "c" in the name marks that format, so older files get pruned.
+local THUMBS = tern.plugin.data .. "/thumbs"
+local THUMB_W, THUMB_H = 480, 248
+local thumbs_busy: { [string]: { (boolean) -> () } } = {}
+
+local function thumb_path(src: string): string
+	-- djb2 stays exact in doubles; with six paths a collision is vanishingly rare.
+	local h = 5381
+	for i = 1, #src do
+		h = (h * 33 + string.byte(src, i)) % 4294967296
+	end
+	return string.format("%s/%08x-%d-c.jpg", THUMBS, h, #src)
+end
+
+-- Deletes thumbnails of files no longer in Recent, and ones in an older format.
+local function prune_thumbs(list: { string })
+	local keep = {}
+	for _, p in list do
+		keep[thumb_path(p)] = true
+	end
+	local ok, names = pcall(tern.fs.list, THUMBS)
+	for _, name in if ok then names else {} do
+		if not keep[THUMBS .. "/" .. name] then
+			pcall(tern.fs.remove, THUMBS .. "/" .. name)
+		end
+	end
+end
+
+-- Calls back true once the thumbnail exists, false when it can't be made (no ffmpeg,
+-- an SVG, a missing file). Readers wait on thumbs_busy, never on a half-written file.
+local function ensure_thumb(src: string, cb: ((boolean) -> ())?)
+	local waiting = thumbs_busy[src]
+	if waiting then
+		if cb then
+			table.insert(waiting, cb)
+		end
+		return
+	end
+	local out = thumb_path(src)
+	if tern.fs.exists(out) then
+		if cb then
+			cb(true)
+		end
+		return
+	end
+	local kind = media.check(src)
+	local ffmpeg = find_tool("ffmpeg")
+	if not kind or not ffmpeg or media.ext(src) == "svg" then
+		if cb then
+			cb(false)
+		end
+		return
+	end
+	local queue = if cb then { cb } else {}
+	thumbs_busy[src] = queue
+	local function finish(ok: boolean)
+		thumbs_busy[src] = nil
+		for _, f in queue do
+			pcall(f, ok)
+		end
+	end
+	tern.fs.mkdir(THUMBS)
+	local function run(seek: boolean)
+		local argv = { ffmpeg, "-y", "-v", "error" }
+		if seek then
+			table.insert(argv, "-ss")
+			table.insert(argv, "1")
+		end
+		local fill = string.format("scale=%d:%d:force_original_aspect_ratio=increase,crop=%d:%d",
+			THUMB_W, THUMB_H, THUMB_W, THUMB_H)
+		for _, a in { "-i", src, "-frames:v", "1", "-vf", fill, "-q:v", "5", out } do
+			table.insert(argv, a)
+		end
+		local started = pcall(tern.process.run, argv, { timeout_ms = 20000 }, function(r)
+			local ok = r.status == 0 and tern.fs.exists(out)
+			if not ok and seek then
+				-- A clip under a second has no frame at 1 s.
+				run(false)
+				return
+			end
+			if not ok then
+				pcall(tern.fs.remove, out)
+			end
+			finish(ok)
+		end)
+		if not started then
+			finish(false)
+		end
+	end
+	run(kind == "video")
+end
+
 -- Up to six files used before, newest first, for the Recent menu.
 local function remember(path: string)
 	local list = { path }
@@ -301,6 +395,9 @@ local function remember(path: string)
 		end
 	end
 	tern.kv.set("recent", list)
+	prune_thumbs(list)
+	-- Warm it now so the picker opens with the picture already there.
+	ensure_thumb(path)
 end
 
 -- Drops Recent entries whose file is gone (renamed, moved, deleted). The current file stays
@@ -755,6 +852,168 @@ tern.block.define("settings", {
 			return true
 		end
 		return false
+	end,
+})
+
+-- The palette's Switch background: Recent files as a grid of thumbnails in a small float.
+-- Picking sends the same import_req as the settings page's Recent menu, then closes.
+local function switch_rows(): { { path: string, current: boolean?, kind: string?, blob: string? } }
+	local c, rows, seen = config(), {}, {}
+	local current = if c.mode == "image" then c.source else nil
+	if current then
+		table.insert(rows, { path = current, current = true })
+		seen[current] = true
+	end
+	for _, p in tern.kv.get("recent") or {} do
+		if not seen[p] then
+			seen[p] = true
+			table.insert(rows, { path = p })
+		end
+	end
+	for _, r in rows do
+		r.kind = media.check(r.path)
+	end
+	return rows
+end
+
+-- The cached JPEG, else an SVG as it is (ffmpeg can't read SVG; Tern draws it).
+local function load_thumb(r, cx): boolean
+	local ok, bytes = pcall(tern.fs.read, thumb_path(r.path), 1024 * 1024)
+	if ok then
+		r.blob = cx:blob(bytes, "image/jpeg")
+		return true
+	end
+	if r.kind and media.ext(r.path) == "svg" then
+		ok, bytes = pcall(tern.fs.read, r.path, 256 * 1024)
+		if ok then
+			r.blob = cx:blob(bytes, "image/svg+xml")
+			return true
+		end
+	end
+	return false
+end
+
+local function switch_pick(s, cx)
+	local r = s.rows[s.sel]
+	if r and r.kind and not r.current then
+		tern.kv.set("import_req", { id = tern.now() .. ":" .. r.path, path = r.path })
+	end
+	s.closed = true
+	cx:exit(0)
+end
+
+local function switch_card(r, i: number, selected: boolean)
+	local pick = if r.kind then { click = "pick=" .. i } else nil
+	local marks = {}
+	if r.current then
+		table.insert(marks, ui.badge("Current", "accent"))
+	end
+	if r.kind == "video" then
+		table.insert(marks, ui.badge("Video", "neutral"))
+	end
+	local over = { ui.node("row", { role = "backdrop.marks" }, marks) }
+	local thumb
+	if r.blob then
+		-- Its own click action, or Tern opens its image viewer instead of picking. w/h give
+		-- the box the thumbnail ratio, so an SVG shown as it is crops the same way.
+		thumb = ui.node("image", { blob = r.blob, alt = media.name(r.path), role = "backdrop.thumb",
+			w = THUMB_W, h = THUMB_H, actions = pick }, over)
+	else
+		local label = if not r.kind then "Missing" elseif r.kind == "video" then "Video" else "Image"
+		thumb = ui.el("div", { class = "bd-ph", actions = pick }, {
+			ui.node("row", { role = "backdrop.marks" }, if r.current then { marks[1] } else {}),
+			ui.el("div", { class = "bd-ph-label", text = label }),
+		})
+	end
+	local class = "bd-card"
+	if selected then
+		class ..= " bd-sel"
+	end
+	if not r.kind then
+		class ..= " bd-off"
+	end
+	-- Cards are narrow: the folder's own name; the tooltip has the full path.
+	local folder = media.folder(r.path)
+	folder = string.match(folder, "([^/\\]+)$") or folder
+	return ui.el("div", { class = class, title = r.path, actions = pick, key = r.path }, {
+		thumb,
+		ui.el("div", { class = "bd-name", text = media.name(r.path) }),
+		ui.el("div", { class = "bd-where", text = if r.kind then folder else "File moved or deleted" }),
+	})
+end
+
+tern.block.define("switch", {
+	font = "sans",
+	init = function(cx)
+		local s = { rows = switch_rows(), sel = 1, closed = false }
+		-- Start on the first file that isn't showing now: the likeliest pick.
+		for i, r in s.rows do
+			if r.kind and not r.current then
+				s.sel = i
+				break
+			end
+		end
+		local paths = {}
+		for _, r in s.rows do
+			table.insert(paths, r.path)
+		end
+		prune_thumbs(paths)
+		for _, r in s.rows do
+			if r.kind and not load_thumb(r, cx) then
+				ensure_thumb(r.path, function(ok)
+					if ok and not s.closed and load_thumb(r, cx) then
+						-- Closed by Tern (focus left, its x): rendering fails, which is fine.
+						pcall(cx.render, cx)
+					end
+				end)
+			end
+		end
+		return s
+	end,
+	title = function()
+		return "Switch background"
+	end,
+	view = function(s)
+		local cards = {}
+		for i, r in s.rows do
+			table.insert(cards, switch_card(r, i, i == s.sel))
+		end
+		return {
+			main = ui.col({
+				if #cards > 0 then ui.el("div", { class = "bd-grid" }, cards)
+					else ui.text(ui.span("No recent files yet. Choose one in Backdrop settings.", "muted")),
+			}),
+			dock = ui.col({
+				ui.text({ ui.span("←↑↓→", "key"), ui.span("  choose     ", "muted"), ui.span("↵", "key"),
+					ui.span("  set     ", "muted"), ui.span("esc", "key"), ui.span("  close", "muted") }),
+			}),
+		}
+	end,
+	event = function(s, ev, cx)
+		local i = tonumber(ev.value)
+		if ev.ev == "action" and ev.act == "pick" and i then
+			s.sel = i
+			switch_pick(s, cx)
+		end
+	end,
+	key = function(s, k, cx)
+		local n = #s.rows
+		local step = ({ left = -1, right = 1, up = -media.PICKER_COLS, down = media.PICKER_COLS })[k.name]
+		if k.name == "escape" then
+			s.closed = true
+			cx:exit(0)
+		elseif k.name == "enter" then
+			switch_pick(s, cx)
+		elseif step and n > 0 then
+			local to = s.sel + step
+			if to < 1 or to > n then
+				return false
+			end
+			s.sel = to
+		else
+			return false
+		end
+		return true
 	end,
 })
 

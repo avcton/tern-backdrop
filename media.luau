@@ -5,6 +5,9 @@ local M = {}
 
 M.IMAGE_EXT = { png = true, jpg = true, jpeg = true, webp = true, svg = true, bmp = true }
 M.ANIM_EXT = { gif = true, mp4 = true, mov = true, m4v = true, webm = true, mkv = true }
+-- Columns of the Switch background grid: Recent holds six, so two full rows at most.
+-- switch.css repeats this number.
+M.PICKER_COLS = 3
 
 function M.ext(path: string): string
 	return string.lower(string.match(path, "%.(%w+)$") or "")

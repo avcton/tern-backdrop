@@ -1,0 +1,117 @@
+/* Switch background picker. Columns repeat media.PICKER_COLS. */
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	/* Expanded, the cards grow with the pane up to here, then the grid centers. */
+	width: 100%;
+	max-width: 1120px;
+	margin: 0 auto;
+	padding: 6px 4px 10px;
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-card {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	padding: 6px 6px 8px;
+	border: 1px solid var(--l2);
+	border-radius: var(--r-card);
+	background: var(--l1);
+	gap: 0;
+	cursor: pointer;
+	transition: border-color 140ms var(--ease), background-color 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-card:hover {
+	border-color: var(--l4);
+	background: var(--l2);
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-card.bd-sel {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 28%);
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-card.bd-off {
+	opacity: 0.5;
+	cursor: default;
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .sf-image[data-role='backdrop.thumb'],
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph {
+	width: 100%;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+/* Height follows width at the thumbnails' 480:248 ratio, via the node's w and h. */
+.sf-main[data-surface='plugin.backdrop.switch'] .sf-image[data-role='backdrop.thumb'] .sf-img-frame {
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
+/* No aspect-ratio in Tern's CSS: bottom padding is a share of width, the same 248/480. */
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph {
+	position: relative;
+	height: 0;
+	padding-bottom: 51.67%;
+	background: var(--l2);
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph-label {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--t3);
+	font-size: 12px;
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] {
+	gap: 4px;
+	padding: 6px;
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-name {
+	align-self: stretch;
+	width: 100%;
+	margin: 8px 0 0;
+	padding: 0 2px;
+	line-height: 18px;
+	color: var(--t1);
+	font-size: 13px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] .bd-where {
+	align-self: stretch;
+	width: 100%;
+	margin: 0 0 0;
+	padding: 0 2px;
+	line-height: 16px;
+	color: var(--t3);
+	font-size: 11.5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Marks sit on the picture: a dark glass chip keeps them readable on light frames. */
+.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] .sf-badge {
+	background: rgb(0 0 0 / 55%);
+	backdrop-filter: blur(6px);
+	border-color: rgb(255 255 255 / 14%);
+}
+
+.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] .sf-badge[data-tone='neutral'] {
+	color: rgb(255 255 255 / 90%);
+}

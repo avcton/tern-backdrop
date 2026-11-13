@@ -43,7 +43,7 @@ Press `ctrl+alt+b`, or run **Backdrop settings** from the palette. To update, ru
 ## Use
 
 - **Gradient** (the default) slowly sweeps violet, blue and pink across the window.
-- **Media** shows a file of yours. Choose **Change…** and paste a path (`~/Pictures/beach.mp4`, `C:\Users\you\Pictures\beach.mp4`, a quoted path or a `file://` link all work), or pick one from **Recent**.
+- **Media** shows a file of yours. Choose **Change…** and paste a path (`~/Pictures/beach.mp4`, `C:\Users\you\Pictures\beach.mp4`, a quoted path or a `file://` link all work), or pick one from **Recent**. To switch without opening settings, run **Backdrop: Switch Background** from the palette and pick a Recent file.
 - From Tern's file viewer, **Open with → Set as Tern background** does the same for any image or video.
 - Images: PNG, JPEG, WebP, SVG, BMP. Animated: GIF, MP4, MOV, M4V, WebM, MKV.
 

@@ -404,3 +404,54 @@ tern.command({
 		end
 	end,
 })
+
+-- The Recent picker floats as a compact card and acts like a popup: it closes once focus
+-- leaves it. Tern's own glimpse closes on click-away too, but fills the whole tab.
+local picker: number? = nil
+
+tern.on("focus", function(ev, cx)
+	if picker and ev.pane ~= picker then
+		local pane = picker
+		picker = nil
+		pcall(cx.layout.close, cx.layout, pane)
+	end
+end)
+
+tern.on("pane_closed", function(ev)
+	if ev.pane == picker then
+		picker = nil
+	end
+end)
+
+tern.command({
+	id = "switch",
+	title = "Backdrop: Switch Background",
+	icon = "image",
+	available = function()
+		return #(tern.kv.get("recent") or {}) > 0
+	end,
+	run = function(cx)
+		-- Also finds one left by a plugin reload, which reset `picker`.
+		for _, p in cx.session:panes() do
+			if p.block == "backdrop.switch" then
+				picker = p.pane
+				cx.layout:focus(p.pane)
+				return
+			end
+		end
+		local owner = cx.session:focused()
+		local pane = cx:new_block("backdrop.switch", nil, "glimpse")
+		if pane == nil then
+			cx:toast("error", "Backdrop picker unavailable", "The plugin's host half isn't loaded. Try: tern plugin reload")
+			return
+		end
+		-- About ten lines per row of cards, plus the key hint and the pane's frame.
+		local rows = math.ceil(#(tern.kv.get("recent") or {}) / media.PICKER_COLS)
+		local ok, err = cx.layout:float(pane, owner, "tr", { size = { 0.55, rows * 10 + 4 }, focus = true })
+		if not ok then
+			tern.log.warn("backdrop picker stays full size", err)
+		end
+		picker = pane
+		cx.layout:focus(pane)
+	end,
+})

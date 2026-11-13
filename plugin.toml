@@ -6,10 +6,16 @@ description = "Animated gradient, image or video behind the Tern window, with ba
 icon = "image"
 host = "host.luau"
 window = "window.luau"
+styles = ["switch.css"]
 
 [[blocks]]
 id = "settings"
 title = "Backdrop"
+
+[[blocks]]
+id = "switch"
+title = "Switch background"
+palette = false
 
 [[blocks]]
 id = "apply"

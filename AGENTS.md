@@ -6,9 +6,10 @@ Backdrop is a [Tern](https://stencil.so/tern) plugin written in Luau: an animate
 
 | File | Runs in | Owns |
 | --- | --- | --- |
-| `plugin.toml` | manifest | id `backdrop`, blocks `settings` (the page) and `apply` (Open with, "Set as Tern background") |
+| `plugin.toml` | manifest | id `backdrop`, blocks `settings` (the page), `switch` (the palette's Recent picker) and `apply` (Open with, "Set as Tern background") |
 | `host.luau` | host half (daemon worker) | imports (ffprobe/ffmpeg), sprite-sheet planning, media files, Recent, the settings block's view and events |
 | `window.luau` | window half (one VM per window) | turning the config into CSS (`tern.css("bg"…)`, `"bar"`), applying window settings, mirroring Tern's settings, the path prompt, toasts |
+| `switch.css` | manifest `styles` | the Switch background picker's card grid |
 | `media.luau` | both | path normalizing and checks, per-OS home folder, display helpers |
 | `tern.d.luau` | tooling | generated types, committed so CI can type-check; regenerate with `tern plugin types .` after a Tern update |
 
@@ -26,7 +27,7 @@ Logs: macOS `~/Library/Logs/Tern/tern.log` (window half) and `tern-daemon.log` (
 
 ## Invariants (each one was learned from a bug)
 
-- **Never write files inside the plugin folder at runtime.** Tern watches it recursively and reloads the plugin on any change, which drops and reinstalls the sheets (a visible flash). Imports go to `tern.plugin.data .. "/media"`; the window half inlines them as `data:` URLs because a sheet's `url()` can only name files in the plugin folder.
+- **Never write files inside the plugin folder at runtime.** Tern watches it recursively and reloads the plugin on any change, which drops and reinstalls the sheets (a visible flash). Imports go to `tern.plugin.data .. "/media"` (picker thumbnails to `/thumbs`); the window half inlines them as `data:` URLs because a sheet's `url()` can only name files in the plugin folder.
 - **Every window callback has a 50 ms budget.** Tern pauses the plugin's timers for a few seconds when one runs over. Heavy work (encoding a sheet, installing the CSS) gets its own `tern.timer(0, …)`. ffmpeg work stays in the host half.
 - **Video is sprite sheets played by CSS `@keyframes`**, never Lua-driven frame swaps (Tern only redraws an idle window for CSS animations) and never one file per frame (Tern drops images not in use, which flickered). At most `MAX_SHEETS` sheets of at most 4096 px a side; each cell carries a `BLEED` px edge border.
 - **The keyframes name is unique per import** (`backdrop-play-<rev>`); a fixed name kept the old clip playing.
