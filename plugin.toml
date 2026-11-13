@@ -1,7 +1,7 @@
 schema = 1
 id = "backdrop"
 name = "Backdrop"
-version = "1.0.1"
+version = "1.1.0"
 description = "Animated gradient, image or video behind the Tern window, with bar tints and window look controls."
 icon = "image"
 host = "host.luau"
