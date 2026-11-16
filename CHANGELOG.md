@@ -7,6 +7,7 @@ All notable changes to Backdrop are listed here. The format follows [Keep a Chan
 ### Fixed
 
 - A window whose Backdrop callback ran past Tern's 500 ms wall-time cap (often the computer sleeping mid-call) stopped picking up new settings until a plugin reload; it now resumes on its own.
+- On the Background page, Source's Gradient / Media / Off buttons sit beside the label again instead of dropping to a line of their own, flush left (Tern 0.9.23 reserves room for the hidden Reset button).
 
 ## [1.1.0] - 2026-11-13
 

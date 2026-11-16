@@ -173,7 +173,8 @@ local function bar_css(c): string
 		-- In a narrow pane Tern let labels shrink to one letter per line beside a wide
 		-- control. Keep a readable label width and wrap the control under it instead.
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row { flex-wrap: wrap !important; }",
-		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-lbl { min-width: 9em !important; }",
+		-- 7em at most: Tern's hidden Reset takes room, and Source's control must fit.
+		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-lbl { min-width: 7em !important; }",
 		-- The control box also holds Tern's hover-only Reset button; when both don't fit,
 		-- wrap-reverse keeps the control on top and puts Reset under it.
 		-- margin-left keeps a wrapped control on the right, like the other rows.
