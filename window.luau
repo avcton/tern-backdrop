@@ -176,7 +176,8 @@ local function bar_css(c): string
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-lbl { min-width: 9em !important; }",
 		-- The control box also holds Tern's hover-only Reset button; when both don't fit,
 		-- wrap-reverse keeps the control on top and puts Reset under it.
-		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-ctl { max-width: 100% !important; flex-wrap: wrap-reverse !important; justify-content: flex-end !important; }",
+		-- margin-left keeps a wrapped control on the right, like the other rows.
+		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-ctl { max-width: 100% !important; flex-wrap: wrap-reverse !important; justify-content: flex-end !important; margin-left: auto !important; }",
 		-- A layer behind the page covering the whole pane: clicks below the shrunken page land
 		-- on it and close the menu (host.luau's "dismiss"), as clicks elsewhere on the page do.
 		".sf-main[data-surface='plugin.backdrop.settings'] > .sf-prefs { position: relative; z-index: 1; }",
@@ -286,6 +287,10 @@ local function tick(cx, token: number)
 	if token ~= loop then
 		return
 	end
+	-- Schedule first: a budget trip raises out of this call and would end the loop.
+	tern.timer(400, function(next_cx)
+		tick(next_cx, token)
+	end)
 	local t0 = tern.now()
 	local ok, err = pcall(function()
 		local c = cfg()
@@ -371,9 +376,6 @@ local function tick(cx, token: number)
 		last_err = nil
 	end
 	warn_if_slow("tick", t0)
-	tern.timer(400, function(next_cx)
-		tick(next_cx, token)
-	end)
 end
 
 local function start()

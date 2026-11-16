@@ -2,6 +2,12 @@
 
 All notable changes to Backdrop are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A window whose Backdrop callback ran past Tern's 500 ms wall-time cap (often the computer sleeping mid-call) stopped picking up new settings until a plugin reload; it now resumes on its own.
+
 ## [1.1.0] - 2026-11-13
 
 ### Added
