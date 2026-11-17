@@ -6,10 +6,10 @@ Backdrop is a [Tern](https://stencil.so/tern) plugin written in Luau: an animate
 
 | File | Runs in | Owns |
 | --- | --- | --- |
-| `plugin.toml` | manifest | id `backdrop`, blocks `settings` (the page), `switch` (the palette's Recent picker) and `apply` (Open with, "Set as Tern background") |
+| `plugin.toml` | manifest | id `backdrop`, blocks `settings` (the page), `switcher` (the palette's Recent picker) and `apply` (Open with, "Set as Tern background") |
 | `host.luau` | host half (daemon worker) | imports (ffprobe/ffmpeg), sprite-sheet planning, media files, Recent, the settings block's view and events |
 | `window.luau` | window half (one VM per window) | turning the config into CSS (`tern.css("bg"…)`, `"bar"`), applying window settings, mirroring Tern's settings, the path prompt, toasts |
-| `switch.css` | manifest `styles` | the Switch background picker's card grid |
+| `switcher.css` | manifest `styles` | the Switch background picker's card grid |
 | `media.luau` | both | path normalizing and checks, per-OS home folder, display helpers |
 | `tern.d.luau` | tooling | generated types, committed so CI can type-check; regenerate with `tern plugin types .` after a Tern update |
 

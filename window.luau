@@ -427,7 +427,7 @@ tern.on("pane_closed", function(ev)
 end)
 
 tern.command({
-	id = "switch",
+	id = "switcher",
 	title = "Backdrop: Switch Background",
 	icon = "image",
 	available = function()
@@ -436,14 +436,14 @@ tern.command({
 	run = function(cx)
 		-- Also finds one left by a plugin reload, which reset `picker`.
 		for _, p in cx.session:panes() do
-			if p.block == "backdrop.switch" then
+			if p.block == "backdrop.switcher" then
 				picker = p.pane
 				cx.layout:focus(p.pane)
 				return
 			end
 		end
 		local owner = cx.session:focused()
-		local pane = cx:new_block("backdrop.switch", nil, "glimpse")
+		local pane = cx:new_block("backdrop.switcher", nil, "glimpse")
 		if pane == nil then
 			cx:toast("error", "Backdrop picker unavailable", "The plugin's host half isn't loaded. Try: tern plugin reload")
 			return

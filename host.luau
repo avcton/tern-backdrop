@@ -942,7 +942,7 @@ local function switch_card(r, i: number, selected: boolean)
 	})
 end
 
-tern.block.define("switch", {
+tern.block.define("switcher", {
 	font = "sans",
 	init = function(cx)
 		local s = { rows = switch_rows(), sel = 1, closed = false }

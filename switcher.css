@@ -1,6 +1,6 @@
 /* Switch background picker. Columns repeat media.PICKER_COLS. */
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-grid {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 10px;
@@ -11,7 +11,7 @@
 	padding: 6px 4px 10px;
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-card {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card {
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
@@ -24,44 +24,44 @@
 	transition: border-color 140ms var(--ease), background-color 140ms var(--ease), box-shadow 140ms var(--ease);
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-card:hover {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card:hover {
 	border-color: var(--l4);
 	background: var(--l2);
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-card.bd-sel {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-sel {
 	border-color: var(--accent);
 	box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 28%);
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-card.bd-off {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-off {
 	opacity: 0.5;
 	cursor: default;
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .sf-image[data-role='backdrop.thumb'],
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph {
+.sf-main[data-surface='plugin.backdrop.switcher'] .sf-image[data-role='backdrop.thumb'],
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-ph {
 	width: 100%;
 	border-radius: 8px;
 	overflow: hidden;
 }
 
 /* Height follows width at the thumbnails' 480:248 ratio, via the node's w and h. */
-.sf-main[data-surface='plugin.backdrop.switch'] .sf-image[data-role='backdrop.thumb'] .sf-img-frame {
+.sf-main[data-surface='plugin.backdrop.switcher'] .sf-image[data-role='backdrop.thumb'] .sf-img-frame {
 	width: 100%;
 	height: auto;
 	object-fit: cover;
 }
 
 /* No aspect-ratio in Tern's CSS: bottom padding is a share of width, the same 248/480. */
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-ph {
 	position: relative;
 	height: 0;
 	padding-bottom: 51.67%;
 	background: var(--l2);
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-ph-label {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-ph-label {
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -74,12 +74,12 @@
 	font-size: 12px;
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] {
+.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] {
 	gap: 4px;
 	padding: 6px;
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-name {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-name {
 	align-self: stretch;
 	width: 100%;
 	margin: 8px 0 0;
@@ -92,7 +92,7 @@
 	text-overflow: ellipsis;
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] .bd-where {
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-where {
 	align-self: stretch;
 	width: 100%;
 	margin: 0 0 0;
@@ -106,12 +106,12 @@
 }
 
 /* Marks sit on the picture: a dark glass chip keeps them readable on light frames. */
-.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] .sf-badge {
+.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] .sf-badge {
 	background: rgb(0 0 0 / 55%);
 	backdrop-filter: blur(6px);
 	border-color: rgb(255 255 255 / 14%);
 }
 
-.sf-main[data-surface='plugin.backdrop.switch'] [data-role='backdrop.marks'] .sf-badge[data-tone='neutral'] {
+.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] .sf-badge[data-tone='neutral'] {
 	color: rgb(255 255 255 / 90%);
 }
