@@ -166,10 +166,11 @@ local function bar_css(c): string
 		-- Tints and the dim follow the theme: a light wash in light themes, a dark one in
 		-- dark themes, so Tern's text keeps its contrast either way.
 		"html { --bd-scrim: light-dark(#f4f4f6, #121216); }",
-		-- Our settings page: Tern sizes the prefs element itself (inline, so CSS can't
-		-- stretch it) and shrinks it while a menu (Recent) is open, so its backing
-		-- stopped short. Paint the same backing on the full-height region behind it.
-		".sf-main[data-surface='plugin.backdrop.settings'] { background: light-dark(#f7f7f9, #0f0f14) !important; position: relative; }",
+		-- Our settings page: Tern sizes the prefs element itself (inline) and shrinks it
+		-- while a menu (Recent) is open, which cut the page and its nav rail short.
+		-- flex-grow keeps it filling the pane; the region gets the same backing.
+		".sf-main[data-surface='plugin.backdrop.settings'] { background: light-dark(#f7f7f9, #0f0f14) !important; }",
+		".sf-main[data-surface='plugin.backdrop.settings'] > .sf-prefs { flex-grow: 1 !important; }",
 		-- In a narrow pane Tern let labels shrink to one letter per line beside a wide
 		-- control. Keep a readable label width and wrap the control under it instead.
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row { flex-wrap: wrap !important; }",
@@ -179,10 +180,9 @@ local function bar_css(c): string
 		-- wrap-reverse keeps the control on top and puts Reset under it.
 		-- margin-left keeps a wrapped control on the right, like the other rows.
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-row .pf-ctl { max-width: 100% !important; flex-wrap: wrap-reverse !important; justify-content: flex-end !important; margin-left: auto !important; }",
-		-- A layer behind the page covering the whole pane: clicks below the shrunken page land
-		-- on it and close the menu (host.luau's "dismiss"), as clicks elsewhere on the page do.
-		".sf-main[data-surface='plugin.backdrop.settings'] > .sf-prefs { position: relative; z-index: 1; }",
-		".sf-main[data-surface='plugin.backdrop.settings'] > [data-role='backdrop.dismiss'] { position: absolute !important; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }",
+		-- Only carries request_pick's wake counter. Tern (0.9.26) counts even an absolute
+		-- sibling into the region's scroll height, which had doubled the page's length.
+		".sf-main[data-surface='plugin.backdrop.settings'] > [data-role='backdrop.wake'] { display: none !important; }",
 		-- The settings page's brand mark is Tern's (omp's) by default and has no prop; draw ours.
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-mark { background: url(icon.svg) center / contain no-repeat !important; box-shadow: none !important; border-radius: 6px !important; }",
 		".sf-main[data-surface='plugin.backdrop.settings'] .pf-mark > svg { display: none !important; }",

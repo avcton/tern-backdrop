@@ -646,10 +646,9 @@ local function view(s)
 					else "What shows behind Tern: an animated gradient or your own media.",
 				sections = sections,
 			}),
-			-- Fills the pane below the settings element (Tern shrinks it while a menu is
-			-- open): a click there closes the menu, as a click anywhere else on the page does.
-			-- `title` carries s.wake, so request_pick's follow-up renders differ and reach the window.
-			ui.el("div", { role = "backdrop.dismiss", grow = 1, title = tostring(s.wake or 0), actions = { click = "dismiss" } }),
+			-- `title` carries s.wake, so request_pick's follow-up renders differ and reach the
+			-- window. Hidden (window.luau): a page-sized sibling made the region scroll.
+			ui.el("div", { role = "backdrop.wake", title = tostring(s.wake or 0) }),
 		}),
 	}
 end
@@ -804,7 +803,7 @@ tern.block.define("settings", {
 			elseif ev.act == "choose" then
 				-- cx:prompt only exists in the window half; it watches this request.
 				request_pick(s, cx)
-			elseif ev.act == "close" or ev.act == "dismiss" then
+			elseif ev.act == "close" then
 				s.editing = nil
 			end
 			return
