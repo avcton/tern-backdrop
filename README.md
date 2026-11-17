@@ -38,16 +38,18 @@ Built and tested on Tern 0.9.23 on macOS and Windows. Linux is supported but not
 tern plugin install github.com/avcton/tern-backdrop
 ```
 
-Press `ctrl+alt+b`, or run **Backdrop: Settings** from the palette. To update, run the install command again with `--force`; [CHANGELOG.md](CHANGELOG.md) lists what changed.
+Press `ctrl+alt+shift+b`, or run **Backdrop: Settings** from the palette. To update, run the install command again with `--force`; [CHANGELOG.md](CHANGELOG.md) lists what changed.
 
 ## Use
 
 - **Gradient** (the default) slowly sweeps violet, blue and pink across the window.
-- **Media** shows a file of yours. Choose **Change…** and paste a path (`~/Pictures/beach.mp4`, `C:\Users\you\Pictures\beach.mp4`, a quoted path or a `file://` link all work), or pick one from **Recent**. To switch without opening settings, run **Backdrop: Switch Background** from the palette and pick a Recent file.
+- **Media** shows a file of yours. Choose **Change…** and paste a path (`~/Pictures/beach.mp4`, `C:\Users\you\Pictures\beach.mp4`, a quoted path or a `file://` link all work), or pick one from **Recent**. To switch without opening settings, press `ctrl+alt+b` (or run **Backdrop: Switch Background** from the palette) and pick a Recent file.
 - From Tern's file viewer, **Open with → Set as Tern background** does the same for any image or video.
 - Images: PNG, JPEG, WebP, SVG, BMP. Animated: GIF, MP4, MOV, M4V, WebM, MKV.
 
 Importing a video takes a few seconds; a toast says how many frames it kept and whether the loop was smoothed.
+
+To change a shortcut, add it to `keybinds` in Tern's `settings.json`, naming the command's action: `"ctrl+alt+s": "plugin.backdrop.switcher"` or `"ctrl+alt+shift+s": "plugin.backdrop.settings"`. `"ctrl+alt+b": []` frees the default.
 
 ### Light and dark
 

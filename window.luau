@@ -393,7 +393,7 @@ tern.command({
 	id = "settings",
 	title = "Backdrop: Settings",
 	icon = "image",
-	keys = { "ctrl+alt+b" },
+	keys = { "ctrl+alt+shift+b" },
 	run = function(cx)
 		-- One settings pane: focus it if it's already open.
 		for _, p in cx.session:panes() do
@@ -430,6 +430,7 @@ tern.command({
 	id = "switcher",
 	title = "Backdrop: Switch Background",
 	icon = "image",
+	keys = { "ctrl+alt+b" },
 	available = function()
 		return #(tern.kv.get("recent") or {}) > 0
 	end,
