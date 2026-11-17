@@ -8,6 +8,7 @@ All notable changes to Backdrop are listed here. The format follows [Keep a Chan
 
 - `ctrl+alt+b` now opens **Backdrop: Switch Background**; **Backdrop: Settings** moves to `ctrl+alt+shift+b`.
 - The switcher's action is now `plugin.backdrop.switcher` (was `plugin.backdrop.switch`); rename it in any `keybinds` you added.
+- **Backdrop: Switch Background** always shows in the palette. With nothing in Recent yet, it (and `ctrl+alt+b`) shows a toast pointing to Backdrop: Settings instead of doing nothing.
 
 ## [1.1.1] - 2026-11-16
 

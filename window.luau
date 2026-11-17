@@ -431,9 +431,6 @@ tern.command({
 	title = "Backdrop: Switch Background",
 	icon = "image",
 	keys = { "ctrl+alt+b" },
-	available = function()
-		return #(tern.kv.get("recent") or {}) > 0
-	end,
 	run = function(cx)
 		-- Also finds one left by a plugin reload, which reset `picker`.
 		for _, p in cx.session:panes() do
@@ -443,10 +440,14 @@ tern.command({
 				return
 			end
 		end
+		if #(tern.kv.get("recent") or {}) == 0 then
+			cx:toast("info", "No recent backgrounds yet", "Choose an image or video in Backdrop: Settings first.")
+			return
+		end
 		local owner = cx.session:focused()
 		local pane = cx:new_block("backdrop.switcher", nil, "glimpse")
 		if pane == nil then
-			cx:toast("error", "Backdrop picker unavailable", "The plugin's host half isn't loaded. Try: tern plugin reload")
+			cx:toast("error", "Backdrop switcher unavailable", "The plugin's host half isn't loaded. Try: tern plugin reload")
 			return
 		end
 		-- About ten lines per row of cards, plus the key hint and the pane's frame.
