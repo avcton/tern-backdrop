@@ -49,7 +49,7 @@ Press `ctrl+alt+shift+b`, or run **Backdrop: Settings** from the palette. To upd
 
 Importing a video takes a few seconds; a toast says how many frames it kept and whether the loop was smoothed.
 
-To change a shortcut, add it to `keybinds` in Tern's `settings.json`, naming the command's action: `"ctrl+alt+s": "plugin.backdrop.switcher"` or `"ctrl+alt+shift+s": "plugin.backdrop.settings"`. `"ctrl+alt+b": []` frees the default.
+To change a shortcut, open Tern's Settings › Keyboard: both commands are listed under Window as `plugin.backdrop.switcher` and `plugin.backdrop.settings`.
 
 ### Light and dark
 
