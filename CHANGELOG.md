@@ -6,7 +6,12 @@ All notable changes to Backdrop are listed here. The format follows [Keep a Chan
 
 ### Changed
 
+- **Switch Background** stays open after you pick a file: a glass ring with a rolling accent comet runs round that card's border and the step and percentage show under its name. Once the new background is showing and the window has settled, the ring lights up, holds for a moment, and the picker fades out. Esc hides it and the switch carries on. If the switch fails, the reason shows under the cards so you can pick another.
 - On the picker, each picture shows what the file is with an icon in its bottom-right corner (a play mark for videos, a picture for images), the current file's card included; the **Video** pill is gone, and **Current** is the only mark on top. The marks are frosted white in light mode instead of always dark.
+
+### Fixed
+
+- A switch from the picker no longer waits for you to move the mouse or type before the new background shows, when the window was sitting idle.
 
 ## [1.2.0] - 2026-11-17
 

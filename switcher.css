@@ -12,6 +12,7 @@
 }
 
 .sf-main[data-surface='plugin.backdrop.switcher'] .bd-card {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
@@ -37,6 +38,183 @@
 .sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-off {
 	opacity: 0.5;
 	cursor: default;
+}
+
+/* While a pick is switching, the other cards step back and take no clicks. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-wait {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-wait:hover {
+	border-color: var(--l2);
+	background: var(--l1);
+}
+
+/* The picked card while it switches: its border becomes a glass ring with a comet of accent
+   rolling round it; the step and percentage live in the line under the name. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run,
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run:hover {
+	border-color: transparent;
+	background:
+		linear-gradient(180deg, rgb(from var(--accent) r g b / 8%), transparent 55%),
+		var(--l1);
+	box-shadow:
+		inset 0 1px 0 var(--glass-hi),
+		0 10px 28px -12px rgb(from var(--accent) r g b / 55%);
+}
+
+/* Both layers are a 3px ring hugging the card's edge, cut out of a full box by the mask. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run::before,
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run::after {
+	content: '';
+	position: absolute;
+	inset: -2px;
+	padding: 3px;
+	border-radius: calc(var(--r-card) + 2px);
+	pointer-events: none;
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask-composite: exclude;
+}
+
+/* The glass track. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run::before {
+	background-color: light-dark(rgb(0 0 0 / 10%), rgb(255 255 255 / 12%));
+}
+
+/* The comet: a tail fading in behind a bright head, which glints white in dark mode.
+   (color-mix() in this gradient dropped it whole in Tern 0.9.27.) A counted run, not
+   infinite: Tern paces endless plugin animations to ~15 fps on battery, which made the
+   comet step; this one only lives for a switch, well under its 84 s. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run::after {
+	background-image: conic-gradient(from 0deg, transparent 0 45%, rgb(from var(--accent) r g b / 35%) 75%, var(--accent) 95%, light-dark(var(--accent), rgb(255 255 255 / 90%)) 99%, transparent 100%);
+	animation: bd-roll 1.4s linear 60;
+}
+
+@keyframes bd-roll {
+	from {
+		background-image: conic-gradient(from 0deg, transparent 0 45%, rgb(from var(--accent) r g b / 35%) 75%, var(--accent) 95%, light-dark(var(--accent), rgb(255 255 255 / 90%)) 99%, transparent 100%);
+	}
+	to {
+		background-image: conic-gradient(from 360deg, transparent 0 45%, rgb(from var(--accent) r g b / 35%) 75%, var(--accent) 95%, light-dark(var(--accent), rgb(255 255 255 / 90%)) 99%, transparent 100%);
+	}
+}
+
+/* Finished: the ring lights up in one step. It lands over a second after the click, when
+   Tern on battery has dropped animations to about 16 fps until the next input, so a fade
+   here stepped visibly. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-done {
+	box-shadow:
+		inset 0 1px 0 var(--glass-hi),
+		0 0 0 4px rgb(from var(--accent) r g b / 18%),
+		0 12px 32px -10px rgb(from var(--accent) r g b / 65%);
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-done::before {
+	background-color: var(--accent);
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-done::after {
+	animation: none;
+	opacity: 0;
+}
+
+/* Leaving: the whole picker fades and settles back before the pane closes (host.luau),
+   rather than vanishing in one frame. Eased in, so the fade spreads over the few frames
+   Tern draws now instead of mostly landing in the first. */
+section.tn-pane:has(.sf-main[data-surface='plugin.backdrop.switcher'] .bd-leaving) {
+	animation: bd-leave 260ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+@keyframes bd-leave {
+	from {
+		opacity: 1;
+		transform: none;
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+}
+
+/* Its last line, at bd-where's height so the grid doesn't shift: a live dot, the step,
+   and the percentage at the far end. */
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-status {
+	display: flex;
+	align-items: center;
+	align-self: stretch;
+	gap: 6px;
+	height: 16px;
+	padding: 0 2px;
+	font-size: 11.5px;
+	line-height: 16px;
+	white-space: nowrap;
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-dot {
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--accent);
+	animation: bd-pulse 1.2s var(--ease) 70;
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-step {
+	color: var(--t2);
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-pct {
+	margin-left: auto;
+	color: var(--t3);
+	font-variant-numeric: tabular-nums;
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-done .bd-dot {
+	animation: none;
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-done .bd-step,
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-done .bd-pct {
+	color: var(--accent);
+}
+
+@keyframes bd-pulse {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgb(from var(--accent) r g b / 50%);
+	}
+	50% {
+		box-shadow: 0 0 0 4px rgb(from var(--accent) r g b / 0%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.sf-main[data-surface='plugin.backdrop.switcher'] .bd-card.bd-run::after,
+	.sf-main[data-surface='plugin.backdrop.switcher'] .bd-dot {
+		animation: none;
+	}
+
+	/* A plain fade out, without the shrink. */
+	section.tn-pane:has(.sf-main[data-surface='plugin.backdrop.switcher'] .bd-leaving) {
+		animation-name: bd-leave-still;
+	}
+}
+
+@keyframes bd-leave-still {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.wake'] {
+	display: none;
 }
 
 .sf-main[data-surface='plugin.backdrop.switcher'] .sf-image[data-role='backdrop.thumb'],

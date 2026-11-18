@@ -13,7 +13,7 @@ Backdrop is a [Tern](https://stencil.so/tern) plugin written in Luau: an animate
 | `media.luau` | both | path normalizing and checks, per-OS home folder, display helpers |
 | `tern.d.luau` | tooling | generated types, committed so CI can type-check; regenerate with `tern plugin types .` after a Tern update |
 
-The halves share nothing but `tern.kv` (`kv.json` in the plugin's data folder). Keys: `config` (bumps `rev` on every save), `recent`, `import_req` / `import_result`, `pick_req` / `pick_done`, `tern` (mirrored settings), `win_applied`, `applied`, `pruned`.
+The halves share nothing but `tern.kv` (`kv.json` in the plugin's data folder). Keys: `config` (bumps `rev` on every save), `recent`, `import_req` / `import_result`, `pick_req` / `pick_done`, `tern` (mirrored settings), `win_applied`, `apply_step` (the window's progress applying a backdrop, for the picker's percentage), `applied`, `pruned`.
 
 ## Develop
 

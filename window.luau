@@ -313,6 +313,12 @@ local function tick(cx, token: number)
 			elseif c1.mode == "image" and c1.image then
 				table.insert(files, c1.image)
 			end
+			-- Each encoded file and the install are one step, for the picker's percentage.
+			local total = #files + 1
+			local function step(done: number)
+				tern.kv.set("apply_step", { image = c1.image or false, done = done, total = total })
+			end
+			step(0)
 			local function install()
 				local t1 = tern.now()
 				local c2 = cfg()
@@ -329,6 +335,7 @@ local function tick(cx, token: number)
 				tern.timer(0, function()
 					local t1 = tern.now()
 					pcall(data_url, files[i])
+					step(i)
 					warn_if_slow("encoding " .. media.name(files[i]), t1)
 					warm(i + 1)
 				end)

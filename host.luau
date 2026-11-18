@@ -855,7 +855,7 @@ tern.block.define("settings", {
 })
 
 -- The palette's Switch background: Recent files as a grid of thumbnails in a small float.
--- Picking sends the same import_req as the settings page's Recent menu, then closes.
+-- Picking sends the same import_req as the settings page's Recent menu.
 local function switch_rows(): { { path: string, current: boolean?, kind: string?, blob: string? } }
 	local c, rows, seen = config(), {}, {}
 	local current = if c.mode == "image" then c.source else nil
@@ -892,17 +892,105 @@ local function load_thumb(r, cx): boolean
 	return false
 end
 
-local function switch_pick(s, cx)
-	local r = s.rows[s.sel]
-	if r and r.kind and not r.current then
-		tern.kv.set("import_req", { id = tern.now() .. ":" .. r.path, path = r.path })
-	end
+local function switch_close(s, cx)
 	s.closed = true
-	cx:exit(0)
+	pcall(cx.exit, cx, 0)
 end
 
-local function switch_card(r, i: number, selected: boolean)
-	local pick = if r.kind then { click = "pick=" .. i } else nil
+-- Stays open, a ring rolling round the picked card, until a window shows the new backdrop:
+-- the import and the window's apply take seconds, and a closed picker showed nothing meanwhile.
+-- The percentage follows real steps: request sent, import done, each file the window encodes.
+local function switch_pick(s, cx)
+	local r = s.rows[s.sel]
+	if not (r and r.kind and not r.current) then
+		switch_close(s, cx)
+		return
+	end
+	local id = tern.now() .. ":" .. r.path
+	s.switching, s.error = { id = id, path = r.path, pct = 10, step = if r.kind == "video" then "Converting" else "Preparing" }, nil
+	tern.kv.set("import_req", { id = id, path = r.path })
+	local shown, last_render = "", tern.now()
+	local function watch()
+		local sw = s.switching
+		if s.closed or not sw or sw.id ~= id or sw.finished then
+			return
+		end
+		-- A newer request (another page or window) replaced this one; it will never finish.
+		if (tern.kv.get("import_req") or {}).id ~= id then
+			switch_close(s, cx)
+			return
+		end
+		local res = tern.kv.get("import_result") or {}
+		if res.id == id then
+			if not res.ok then
+				-- The windows toast it too; here it stays beside the cards to pick another, and
+				-- a file that went missing since the picker opened shows as such.
+				s.switching, s.error = nil, res.msg
+				for _, row in s.rows do
+					row.kind = media.check(row.path)
+				end
+				pcall(cx.render, cx)
+				return
+			end
+			local image = config().image
+			local applied = tern.kv.get("apply_step") or {}
+			local pct = 40
+			if image and tern.kv.get("applied") == image then
+				pct = 100
+			elseif image and applied.image == image and (applied.total or 0) > 0 then
+				pct = 40 + 60 * applied.done / applied.total
+			end
+			if pct >= 100 then
+				sw.finished = true
+				-- The window's first frames on the new backdrop are heavy (its sheet installs
+				-- and decodes), so the ring keeps rolling through them and lights after; lit
+				-- at once, its finish stuttered along with them.
+				tern.timer(350, function()
+					if s.closed then
+						return
+					end
+					sw.pct, sw.step, sw.done = 100, "Done", true
+					pcall(cx.render, cx)
+					-- Holds the lit ring a beat, then fades the picker out before closing it.
+					tern.timer(350, function()
+						if s.closed then
+							return
+						end
+						s.leaving = true
+						pcall(cx.render, cx)
+						tern.timer(280, function()
+							if not s.closed then
+								switch_close(s, cx)
+							end
+						end)
+					end)
+				end)
+				return
+			end
+			-- It never runs backwards.
+			sw.pct = math.max(sw.pct, math.floor(pct + 0.5))
+			sw.step = "Applying"
+		end
+		-- Renders when the line under the name changes, and at least every 450 ms as a
+		-- heartbeat: each frame wakes an idle window, whose half otherwise sat on the new
+		-- backdrop until input arrived (see request_pick). Rendering every pass (150 ms) gave
+		-- the window an update to apply each time, among the frames where the ring hitched.
+		local now, line = tern.now(), sw.step .. sw.pct
+		if line ~= shown or now - last_render >= 450 then
+			shown, last_render = line, now
+			s.wake = (s.wake or 0) + 1
+			-- Closed by Tern (focus left): rendering fails, ending the watch.
+			if not pcall(cx.render, cx) then
+				return
+			end
+		end
+		tern.timer(150, watch)
+	end
+	tern.timer(150, watch)
+end
+
+local function switch_card(r, i: number, selected: boolean, sw)
+	local pick = if r.kind and not sw then { click = "pick=" .. i } else nil
 	local marks = if r.current then { ui.badge("Current", "accent") } else {}
 	local over = { ui.node("row", { role = "backdrop.marks" }, marks) }
 	-- What the file is, as an icon in the picture's bottom-right corner; none when it's gone.
@@ -930,13 +1018,30 @@ local function switch_card(r, i: number, selected: boolean)
 	if not r.kind then
 		class ..= " bd-off"
 	end
-	-- Cards are narrow: the folder's own name; the tooltip has the full path.
-	local folder = media.folder(r.path)
-	folder = string.match(folder, "([^/\\]+)$") or folder
+	local foot
+	if sw and sw.path == r.path then
+		class ..= " bd-run"
+		if sw.done then
+			class ..= " bd-done"
+		end
+		foot = ui.el("div", { class = "bd-status" }, {
+			ui.el("div", { class = "bd-dot" }),
+			ui.el("div", { class = "bd-step", text = sw.step }),
+			ui.el("div", { class = "bd-pct", text = sw.pct .. "%" }),
+		})
+	else
+		if sw then
+			class ..= " bd-wait"
+		end
+		-- Cards are narrow: the folder's own name; the tooltip has the full path.
+		local folder = media.folder(r.path)
+		folder = string.match(folder, "([^/\\]+)$") or folder
+		foot = ui.el("div", { class = "bd-where", text = if r.kind then folder else "File moved or deleted" })
+	end
 	return ui.el("div", { class = class, title = r.path, actions = pick, key = r.path }, {
 		thumb,
 		ui.el("div", { class = "bd-name", text = media.name(r.path) }),
-		ui.el("div", { class = "bd-where", text = if r.kind then folder else "File moved or deleted" }),
+		foot,
 	})
 end
 
@@ -974,22 +1079,28 @@ tern.block.define("switcher", {
 	view = function(s)
 		local cards = {}
 		for i, r in s.rows do
-			table.insert(cards, switch_card(r, i, i == s.sel))
+			table.insert(cards, switch_card(r, i, i == s.sel, s.switching))
+		end
+		local hint = if s.switching
+			then { ui.span("esc", "key"), ui.span("  hide, switching carries on", "muted") }
+			else { ui.span("←↑↓→", "key"), ui.span("  choose     ", "muted"), ui.span("↵", "key"),
+				ui.span("  set     ", "muted"), ui.span("esc", "key"), ui.span("  close", "muted") }
+		-- `title` carries s.wake, so switch_pick's renders differ and reach the window.
+		local dock = { ui.text(hint), ui.el("div", { role = "backdrop.wake", title = tostring(s.wake or 0) }) }
+		if s.error then
+			table.insert(dock, 1, ui.text(ui.span(s.error, "error")))
 		end
 		return {
 			main = ui.col({
-				if #cards > 0 then ui.el("div", { class = "bd-grid" }, cards)
+				if #cards > 0 then ui.el("div", { class = if s.leaving then "bd-grid bd-leaving" else "bd-grid" }, cards)
 					else ui.text(ui.span("No recent files yet. Choose one in Backdrop settings.", "muted")),
 			}),
-			dock = ui.col({
-				ui.text({ ui.span("←↑↓→", "key"), ui.span("  choose     ", "muted"), ui.span("↵", "key"),
-					ui.span("  set     ", "muted"), ui.span("esc", "key"), ui.span("  close", "muted") }),
-			}),
+			dock = ui.col(dock),
 		}
 	end,
 	event = function(s, ev, cx)
 		local i = tonumber(ev.value)
-		if ev.ev == "action" and ev.act == "pick" and i then
+		if ev.ev == "action" and ev.act == "pick" and i and not s.switching then
 			s.sel = i
 			switch_pick(s, cx)
 		end
@@ -998,8 +1109,9 @@ tern.block.define("switcher", {
 		local n = #s.rows
 		local step = ({ left = -1, right = 1, up = -media.PICKER_COLS, down = media.PICKER_COLS })[k.name]
 		if k.name == "escape" then
-			s.closed = true
-			cx:exit(0)
+			switch_close(s, cx)
+		elseif s.switching then
+			return false
 		elseif k.name == "enter" then
 			switch_pick(s, cx)
 		elseif step and n > 0 then
