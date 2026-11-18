@@ -105,13 +105,26 @@
 	text-overflow: ellipsis;
 }
 
-/* Marks sit on the picture: a dark glass chip keeps them readable on light frames. */
-.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] .sf-badge {
-	background: rgb(0 0 0 / 55%);
-	backdrop-filter: blur(6px);
-	border-color: rgb(255 255 255 / 14%);
+/* Marks sit on the picture as glass chips in the theme's own tone: frosted white with dark
+   ink in light mode, smoked with light ink in dark mode. */
+.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] .sf-badge,
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-kind {
+	background: light-dark(rgb(255 255 255 / 78%), rgb(0 0 0 / 55%));
+	backdrop-filter: blur(8px) saturate(1.4);
+	border-color: light-dark(rgb(0 0 0 / 8%), rgb(255 255 255 / 14%));
+	box-shadow: 0 1px 3px light-dark(rgb(0 0 0 / 12%), rgb(0 0 0 / 30%));
 }
 
-.sf-main[data-surface='plugin.backdrop.switcher'] [data-role='backdrop.marks'] .sf-badge[data-tone='neutral'] {
-	color: rgb(255 255 255 / 90%);
+.sf-main[data-surface='plugin.backdrop.switcher'] .bd-kind {
+	position: absolute;
+	right: 6px;
+	bottom: 6px;
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 6px;
+	color: light-dark(rgb(0 0 0 / 78%), rgb(255 255 255 / 90%));
 }

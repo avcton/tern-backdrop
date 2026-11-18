@@ -2,6 +2,12 @@
 
 All notable changes to Backdrop are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- On the picker, each picture shows what the file is with an icon in its bottom-right corner (a play mark for videos, a picture for images), the current file's card included; the **Video** pill is gone, and **Current** is the only mark on top. The marks are frosted white in light mode instead of always dark.
+
 ## [1.2.0] - 2026-11-17
 
 ### Changed

@@ -903,14 +903,14 @@ end
 
 local function switch_card(r, i: number, selected: boolean)
 	local pick = if r.kind then { click = "pick=" .. i } else nil
-	local marks = {}
-	if r.current then
-		table.insert(marks, ui.badge("Current", "accent"))
-	end
-	if r.kind == "video" then
-		table.insert(marks, ui.badge("Video", "neutral"))
-	end
+	local marks = if r.current then { ui.badge("Current", "accent") } else {}
 	local over = { ui.node("row", { role = "backdrop.marks" }, marks) }
+	-- What the file is, as an icon in the picture's bottom-right corner; none when it's gone.
+	if r.kind then
+		table.insert(over, ui.el("div", { class = "bd-kind", title = if r.kind == "video" then "Video" else "Image" }, {
+			ui.node("icon", { name = if r.kind == "video" then "play" else "image" }),
+		}))
+	end
 	local thumb
 	if r.blob then
 		-- Its own click action, or Tern opens its image viewer instead of picking. w/h give
@@ -918,11 +918,10 @@ local function switch_card(r, i: number, selected: boolean)
 		thumb = ui.node("image", { blob = r.blob, alt = media.name(r.path), role = "backdrop.thumb",
 			w = THUMB_W, h = THUMB_H, actions = pick }, over)
 	else
-		local label = if not r.kind then "Missing" elseif r.kind == "video" then "Video" else "Image"
-		thumb = ui.el("div", { class = "bd-ph", actions = pick }, {
-			ui.node("row", { role = "backdrop.marks" }, if r.current then { marks[1] } else {}),
-			ui.el("div", { class = "bd-ph-label", text = label }),
-		})
+		if not r.kind then
+			table.insert(over, ui.el("div", { class = "bd-ph-label", text = "Missing" }))
+		end
+		thumb = ui.el("div", { class = "bd-ph", actions = pick }, over)
 	end
 	local class = "bd-card"
 	if selected then
